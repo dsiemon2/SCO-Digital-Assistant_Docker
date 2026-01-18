@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About - Soup Cookoff Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    .sidebar { min-height: 100vh; background: #2c3e50; }
+    .sidebar .nav-link { color: rgba(255,255,255,0.8); padding: 0.75rem 1rem; }
+    .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #fff; background: rgba(255,255,255,0.1); }
+    .sidebar .nav-link i { margin-right: 0.5rem; }
+    .main-content { background: #f8f9fa; min-height: 100vh; }
+    .hero-section { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; border-radius: 12px; }
+    .feature-icon { width: 60px; height: 60px; background: #e74c3c; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <nav class="col-md-2 d-none d-md-block sidebar p-0">
+        <div class="p-3 text-white">
+          <h5><i class="bi bi-mic"></i> Soup Cookoff</h5>
+          <small>Voice Assistant Admin</small>
+        </div>
+        <ul class="nav flex-column">
+          <li class="nav-item"><a class="nav-link" href="/admin?token=<%= token %>"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/calls?token=<%= token %>"><i class="bi bi-telephone"></i> Call Logs</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/tickets?token=<%= token %>"><i class="bi bi-ticket"></i> Ticket Sales</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/events?token=<%= token %>"><i class="bi bi-calendar-event"></i> Events</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/sponsors?token=<%= token %>"><i class="bi bi-building"></i> Sponsors</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/sponsorship?token=<%= token %>"><i class="bi bi-star"></i> Sponsorship Packages</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/winners?token=<%= token %>"><i class="bi bi-trophy"></i> Winners</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/kb?token=<%= token %>"><i class="bi bi-book"></i> Knowledge Base</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/voices?token=<%= token %>"><i class="bi bi-volume-up"></i> Voices & Languages</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/analytics?token=<%= token %>"><i class="bi bi-graph-up"></i> Analytics</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/settings?token=<%= token %>"><i class="bi bi-gear"></i> Settings</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/admin/about?token=<%= token %>"><i class="bi bi-info-circle"></i> About</a></li>
+        </ul>
+      </nav>
+
+      <main class="col-md-10 ms-sm-auto main-content p-4">
+        <h2 class="mb-4">About The Soup Cookoff</h2>
+
+        <div class="hero-section p-5 mb-4">
+          <h1 class="display-4 mb-3">Are you ready to eat?</h1>
+          <p class="lead mb-0">It's not just soup; it's an experience.</p>
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <h4 class="card-title mb-4">What is The Soup Cookoff?</h4>
+                <p class="lead">
+                  The Soup Cook Off is a fun family event that features over 40 of Pennsylvania's best soups
+                  prepared by local amateur and professional chefs. In 2018, the Soup Cook Off was voted
+                  best charity event by Harrisburg Magazine.
+                </p>
+                <p>
+                  At each event, attendees receive a spoon, voting card, and brochure. Sample unlimited portions
+                  of over 40 different soups and vote for your favorites! Awards are given in both Professional
+                  and Amateur divisions.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-md-4">
+            <div class="card h-100">
+              <div class="card-body text-center">
+                <div class="feature-icon mx-auto mb-3">
+                  <i class="bi bi-heart-fill"></i>
+                </div>
+                <h5>Charity Event</h5>
+                <p class="text-muted">All proceeds benefit the AKT Foundation, supporting families in need.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card h-100">
+              <div class="card-body text-center">
+                <div class="feature-icon mx-auto mb-3">
+                  <i class="bi bi-people-fill"></i>
+                </div>
+                <h5>Community</h5>
+                <p class="text-muted">700+ attendees per event, local chefs, and community vendors.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card h-100">
+              <div class="card-body text-center">
+                <div class="feature-icon mx-auto mb-3">
+                  <i class="bi bi-trophy-fill"></i>
+                </div>
+                <h5>Competition</h5>
+                <p class="text-muted">Professional & Amateur divisions with People's Choice awards.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-calendar-event me-2"></i>Event Schedule</h5>
+              </div>
+              <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                  <li class="mb-2"><strong>Spring Event:</strong> Carlisle Expo Center (March)</li>
+                  <li class="mb-2"><strong>Fall Event:</strong> Best Western Premier, Harrisburg (October)</li>
+                  <li class="mb-2"><strong>Hours:</strong> 11:00 AM - 3:00 PM</li>
+                  <li><strong>VIP Early Entry:</strong> 10:30 AM</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-ticket me-2"></i>Ticket Prices</h5>
+              </div>
+              <div class="card-body">
+                <table class="table table-sm mb-0">
+                  <thead>
+                    <tr><th>Type</th><th>Online</th><th>At Door</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>General Admission</td><td>$15</td><td>$20</td></tr>
+                    <tr><td>VIP</td><td>$30-35</td><td>$35-40</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>History</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <ul class="list-group list-group-flush">
+                  <li class="list-group-item"><strong>2009:</strong> Event began benefiting Cystic Fibrosis Foundation</li>
+                  <li class="list-group-item"><strong>2015:</strong> Launched website; added fall event</li>
+                  <li class="list-group-item"><strong>2016:</strong> Relocated to larger venue at Radisson Camp Hill</li>
+                </ul>
+              </div>
+              <div class="col-md-6">
+                <ul class="list-group list-group-flush">
+                  <li class="list-group-item"><strong>2018:</strong> Voted best charity event; became AKT Foundation partner</li>
+                  <li class="list-group-item"><strong>2020:</strong> Moved to Carlisle Expo Center</li>
+                  <li class="list-group-item"><strong>2024:</strong> Event returned post-pandemic</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card border-warning mb-4">
+          <div class="card-header bg-warning">
+            <h5 class="mb-0"><i class="bi bi-heart me-2"></i>The AKT Foundation</h5>
+          </div>
+          <div class="card-body">
+            <p>
+              The AKT Foundation is a 501(c)(3) nonprofit organization dedicated to providing
+              essential household necessities to families in extreme poverty and those impacted
+              by domestic violence.
+            </p>
+            <p class="mb-0">
+              <strong>All proceeds from The Soup Cookoff go directly to supporting families in need.</strong>
+            </p>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

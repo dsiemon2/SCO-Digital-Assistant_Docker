@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= event ? 'Edit' : 'New' %> Event - Soup Cookoff Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    .sidebar { min-height: 100vh; background: #2c3e50; }
+    .sidebar .nav-link { color: rgba(255,255,255,0.8); padding: 0.75rem 1rem; }
+    .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #fff; background: rgba(255,255,255,0.1); }
+    .sidebar .nav-link i { margin-right: 0.5rem; }
+    .main-content { background: #f8f9fa; min-height: 100vh; }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <nav class="col-md-2 d-none d-md-block sidebar p-0">
+        <div class="p-3 text-white">
+          <h5><i class="bi bi-mic"></i> Soup Cookoff</h5>
+          <small>Voice Assistant Admin</small>
+        </div>
+        <ul class="nav flex-column">
+          <li class="nav-item"><a class="nav-link" href="/admin?token=<%= token %>"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/calls?token=<%= token %>"><i class="bi bi-telephone"></i> Call Logs</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/tickets?token=<%= token %>"><i class="bi bi-ticket"></i> Ticket Sales</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/admin/events?token=<%= token %>"><i class="bi bi-calendar-event"></i> Events</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/sponsors?token=<%= token %>"><i class="bi bi-building"></i> Sponsors</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/kb?token=<%= token %>"><i class="bi bi-book"></i> Knowledge Base</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/analytics?token=<%= token %>"><i class="bi bi-graph-up"></i> Analytics</a></li>
+        </ul>
+      </nav>
+
+      <main class="col-md-10 ms-sm-auto main-content p-4">
+        <h2 class="mb-4"><%= event ? 'Edit' : 'New' %> Event</h2>
+
+        <div class="card">
+          <div class="card-body">
+            <form action="<%= event ? '/admin/events/' + event.id : '/admin/events' %>?token=<%= token %>" method="POST">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Event Name</label>
+                  <input type="text" name="name" class="form-control" value="<%= event ? event.name : '' %>" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Date</label>
+                  <input type="datetime-local" name="date" class="form-control" value="<%= event ? new Date(event.date).toISOString().slice(0,16) : '' %>" required>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Location</label>
+                  <input type="text" name="location" class="form-control" value="<%= event ? event.location : '' %>" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Address</label>
+                  <input type="text" name="address" class="form-control" value="<%= event ? event.address || '' : '' %>">
+                </div>
+              </div>
+
+              <h5 class="mt-4 mb-3">Pricing</h5>
+              <div class="row">
+                <div class="col-md-3 mb-3">
+                  <label class="form-label">GA Online Price</label>
+                  <input type="number" step="0.01" name="gaPriceOnline" class="form-control" value="<%= event ? event.gaPriceOnline : 15 %>">
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label class="form-label">GA Gate Price</label>
+                  <input type="number" step="0.01" name="gaPriceGate" class="form-control" value="<%= event ? event.gaPriceGate : 20 %>">
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label class="form-label">VIP Online Price</label>
+                  <input type="number" step="0.01" name="vipPriceOnline" class="form-control" value="<%= event ? event.vipPriceOnline : 35 %>">
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label class="form-label">VIP Gate Price</label>
+                  <input type="number" step="0.01" name="vipPriceGate" class="form-control" value="<%= event ? event.vipPriceGate : 40 %>">
+                </div>
+              </div>
+
+              <h5 class="mt-4 mb-3">Capacity</h5>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">GA Capacity</label>
+                  <input type="number" name="gaCapacity" class="form-control" value="<%= event ? event.gaCapacity : 500 %>">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">VIP Capacity</label>
+                  <input type="number" name="vipCapacity" class="form-control" value="<%= event ? event.vipCapacity : 100 %>">
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <div class="form-check">
+                  <input type="checkbox" name="active" class="form-check-input" id="active" <%= event && event.active ? 'checked' : '' %>>
+                  <label class="form-check-label" for="active">Active (visible for ticket sales)</label>
+                </div>
+              </div>
+
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-check"></i> <%= event ? 'Update' : 'Create' %> Event
+                </button>
+                <a href="/admin/events?token=<%= token %>" class="btn btn-secondary">Cancel</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

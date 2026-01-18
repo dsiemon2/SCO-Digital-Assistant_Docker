@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Winners - Soup Cookoff Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    .sidebar { min-height: 100vh; background: #2c3e50; }
+    .sidebar .nav-link { color: rgba(255,255,255,0.8); padding: 0.75rem 1rem; }
+    .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #fff; background: rgba(255,255,255,0.1); }
+    .sidebar .nav-link i { margin-right: 0.5rem; }
+    .main-content { background: #f8f9fa; min-height: 100vh; }
+    .place-badge { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+    .place-1 { background: linear-gradient(135deg, #ffd700, #ffb700); color: #333; }
+    .place-2 { background: linear-gradient(135deg, #c0c0c0, #a8a8a8); color: #333; }
+    .place-3 { background: linear-gradient(135deg, #cd7f32, #b8722e); color: #fff; }
+    .place-4, .place-5 { background: #6c757d; color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <nav class="col-md-2 d-none d-md-block sidebar p-0">
+        <div class="p-3 text-white">
+          <h5><i class="bi bi-mic"></i> Soup Cookoff</h5>
+          <small>Voice Assistant Admin</small>
+        </div>
+        <ul class="nav flex-column">
+          <li class="nav-item"><a class="nav-link" href="/admin?token=<%= token %>"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/calls?token=<%= token %>"><i class="bi bi-telephone"></i> Call Logs</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/tickets?token=<%= token %>"><i class="bi bi-ticket"></i> Ticket Sales</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/events?token=<%= token %>"><i class="bi bi-calendar-event"></i> Events</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/sponsors?token=<%= token %>"><i class="bi bi-building"></i> Sponsors</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/sponsorship?token=<%= token %>"><i class="bi bi-gift"></i> Sponsorship</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/admin/winners?token=<%= token %>"><i class="bi bi-trophy"></i> Winners</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/kb?token=<%= token %>"><i class="bi bi-book"></i> Knowledge Base</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/analytics?token=<%= token %>"><i class="bi bi-graph-up"></i> Analytics</a></li>
+          <div class="nav-divider"></div>
+          <div class="nav-section">Configuration</div>
+          <li class="nav-item"><a class="nav-link" href="/admin/webhooks?token=<%= token %>"><i class="bi bi-broadcast"></i> Webhooks</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/sms?token=<%= token %>"><i class="bi bi-chat-dots"></i> SMS Settings</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/transfer?token=<%= token %>"><i class="bi bi-telephone-forward"></i> Call Transfer</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/dtmf?token=<%= token %>"><i class="bi bi-grid-3x3"></i> DTMF Menu</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/tools?token=<%= token %>"><i class="bi bi-tools"></i> AI Tools</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/agents?token=<%= token %>"><i class="bi bi-people"></i> AI Agents</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/logic?token=<%= token %>"><i class="bi bi-diagram-3"></i> Logic Rules</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/functions?token=<%= token %>"><i class="bi bi-lightning"></i> Functions</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/payments?token=<%= token %>"><i class="bi bi-credit-card"></i> Payments</a></li>
+          <div class="nav-divider"></div>
+          <li class="nav-item"><a class="nav-link" href="/admin/voices?token=<%= token %>"><i class="bi bi-volume-up"></i> Voices</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/greeting?token=<%= token %>"><i class="bi bi-chat-quote"></i> Greeting</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/settings?token=<%= token %>"><i class="bi bi-gear"></i> Settings</a></li>
+          <div class="nav-divider"></div>
+          <li class="nav-item"><a class="nav-link" href="/admin/help?token=<%= token %>"><i class="bi bi-question-circle"></i> Help & Support</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/account?token=<%= token %>"><i class="bi bi-person-circle"></i> Account</a></li>
+        </ul>
+      </nav>
+
+      <main class="col-md-10 ms-sm-auto main-content p-4">
+        <h2 class="mb-4"><i class="bi bi-trophy text-warning me-2"></i>Winners</h2>
+
+        <% const eventNames = [...new Set(winners.map(w => w.eventName))]; %>
+        <% eventNames.forEach(eventName => { %>
+          <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+              <h4 class="mb-0"><i class="bi bi-calendar-event me-2"></i><%= eventName %></h4>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <% const divisions = [...new Set(winners.filter(w => w.eventName === eventName).map(w => w.division))]; %>
+                <% divisions.forEach(division => { %>
+                  <div class="col-md-6 mb-3">
+                    <h5 class="border-bottom pb-2">
+                      <i class="bi bi-<%= division === 'Professional' ? 'briefcase' : 'person' %> me-2"></i>
+                      <%= division %> Division
+                    </h5>
+                    <div class="list-group">
+                      <% winners.filter(w => w.eventName === eventName && w.division === division).sort((a,b) => a.place - b.place).forEach(winner => { %>
+                        <div class="list-group-item d-flex align-items-center">
+                          <div class="place-badge place-<%= winner.place %> me-3">
+                            <%= winner.place %>
+                          </div>
+                          <div class="flex-grow-1">
+                            <h6 class="mb-1">
+                              <%= winner.soupName %>
+                            </h6>
+                            <small class="text-muted">
+                              <% if (winner.restaurant) { %>
+                                <i class="bi bi-shop me-1"></i><%= winner.restaurant %>
+                              <% } else { %>
+                                <i class="bi bi-person me-1"></i><%= winner.chefName %>
+                              <% } %>
+                            </small>
+                          </div>
+                          <% if (winner.place <= 3) { %>
+                            <i class="bi bi-trophy-fill text-<%= winner.place === 1 ? 'warning' : winner.place === 2 ? 'secondary' : 'danger' %> fs-4"></i>
+                          <% } %>
+                        </div>
+                      <% }); %>
+                    </div>
+                  </div>
+                <% }); %>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+
+        <% if (winners.length === 0) { %>
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>No winners have been recorded yet.
+          </div>
+        <% } %>
+      </main>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

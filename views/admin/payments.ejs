@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Gateways - Soup Cookoff Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    .sidebar { min-height: 100vh; background: #2c3e50; }
+    .sidebar .nav-link { color: rgba(255,255,255,0.8); padding: 0.75rem 1rem; }
+    .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #fff; background: rgba(255,255,255,0.1); }
+    .sidebar .nav-link i { margin-right: 0.5rem; }
+    .main-content { background: #f8f9fa; min-height: 100vh; }
+    .nav-divider { border-top: 1px solid rgba(255,255,255,0.2); margin: 0.5rem 0; }
+    .nav-section { color: rgba(255,255,255,0.5); font-size: 0.75rem; padding: 0.5rem 1rem; text-transform: uppercase; }
+    .gateway-card { transition: all 0.2s; border-left: 4px solid #6c757d; }
+    .gateway-card:hover { box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15); }
+    .gateway-card.enabled { border-left-color: #198754; }
+    .gateway-card.stripe { border-left-color: #635bff; }
+    .gateway-card.paypal { border-left-color: #003087; }
+    .gateway-card.square { border-left-color: #000; }
+    .gateway-logo { height: 40px; width: 150px; object-fit: contain; }
+    .key-field { font-family: monospace; font-size: 0.875rem; }
+    .masked-key { letter-spacing: 2px; }
+    .test-mode-badge { font-size: 0.7rem; }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <nav class="col-md-2 d-none d-md-block sidebar p-0">
+        <div class="p-3 text-white">
+          <h5><i class="bi bi-mic"></i> Soup Cookoff</h5>
+          <small>Voice Assistant Admin</small>
+        </div>
+        <ul class="nav flex-column">
+          <li class="nav-item"><a class="nav-link" href="/admin?token=<%= token %>"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/calls?token=<%= token %>"><i class="bi bi-telephone"></i> Call Logs</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/tickets?token=<%= token %>"><i class="bi bi-ticket"></i> Ticket Sales</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/events?token=<%= token %>"><i class="bi bi-calendar-event"></i> Events</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/sponsors?token=<%= token %>"><i class="bi bi-building"></i> Sponsors</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/sponsorship?token=<%= token %>"><i class="bi bi-gift"></i> Sponsorship</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/winners?token=<%= token %>"><i class="bi bi-trophy"></i> Winners</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/kb?token=<%= token %>"><i class="bi bi-book"></i> Knowledge Base</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/analytics?token=<%= token %>"><i class="bi bi-graph-up"></i> Analytics</a></li>
+          <div class="nav-divider"></div>
+          <div class="nav-section">Configuration</div>
+          <li class="nav-item"><a class="nav-link active" href="/admin/payments?token=<%= token %>"><i class="bi bi-credit-card"></i> Payments</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/webhooks?token=<%= token %>"><i class="bi bi-broadcast"></i> Webhooks</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/sms?token=<%= token %>"><i class="bi bi-chat-dots"></i> SMS Settings</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/transfer?token=<%= token %>"><i class="bi bi-telephone-forward"></i> Call Transfer</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/dtmf?token=<%= token %>"><i class="bi bi-grid-3x3"></i> DTMF Menu</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/tools?token=<%= token %>"><i class="bi bi-tools"></i> AI Tools</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/agents?token=<%= token %>"><i class="bi bi-people"></i> AI Agents</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/logic?token=<%= token %>"><i class="bi bi-diagram-3"></i> Logic Rules</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/functions?token=<%= token %>"><i class="bi bi-lightning"></i> Functions</a></li>
+          <div class="nav-divider"></div>
+          <li class="nav-item"><a class="nav-link" href="/admin/voices?token=<%= token %>"><i class="bi bi-volume-up"></i> Voices</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/greeting?token=<%= token %>"><i class="bi bi-chat-quote"></i> Greeting</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/settings?token=<%= token %>"><i class="bi bi-gear"></i> Settings</a></li>
+          <div class="nav-divider"></div>
+          <li class="nav-item"><a class="nav-link" href="/admin/help?token=<%= token %>"><i class="bi bi-question-circle"></i> Help & Support</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/account?token=<%= token %>"><i class="bi bi-person-circle"></i> Account</a></li>
+        </ul>
+      </nav>
+
+      <main class="col-md-10 ms-sm-auto main-content p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2><i class="bi bi-credit-card text-primary me-2"></i>Payment Gateways</h2>
+        </div>
+
+        <% if (typeof success !== 'undefined' && success) { %>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <i class="bi bi-check-circle me-2"></i><%= success %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <% } %>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="bi bi-exclamation-triangle me-2"></i><%= error %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <% } %>
+
+        <!-- Payment Gateway Cards -->
+        <div class="row">
+          <!-- Stripe -->
+          <div class="col-lg-6 mb-4">
+            <div class="card gateway-card stripe <%= stripeConfig?.enabled ? 'enabled' : '' %>">
+              <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                  <img class="gateway-logo me-3" src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" alt="Stripe">
+                  <div>
+                    <h5 class="mb-0">Stripe</h5>
+                    <small class="text-muted">Credit cards, Apple Pay, Google Pay</small>
+                  </div>
+                </div>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="stripeEnabled"
+                         <%= stripeConfig?.enabled ? 'checked' : '' %>
+                         onchange="toggleGateway('stripe', this.checked)">
+                </div>
+              </div>
+              <div class="card-body">
+                <% if (stripeConfig?.testMode) { %>
+                <div class="mb-3">
+                  <span class="badge bg-warning text-dark test-mode-badge">
+                    <i class="bi bi-bug me-1"></i>TEST MODE
+                  </span>
+                </div>
+                <% } %>
+
+                <form method="POST" action="/admin/payments/stripe?token=<%= token %>">
+                  <div class="mb-3">
+                    <label class="form-label">Publishable Key</label>
+                    <input type="text" class="form-control key-field" name="publicKey"
+                           value="<%= stripeConfig?.publicKey || '' %>"
+                           placeholder="pk_test_...">
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Secret Key</label>
+                    <div class="input-group">
+                      <input type="password" class="form-control key-field" name="secretKey" id="stripeSecretKey"
+                             value="<%= stripeConfig?.secretKey || '' %>"
+                             placeholder="sk_test_...">
+                      <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('stripeSecretKey')">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Webhook Secret</label>
+                    <div class="input-group">
+                      <input type="password" class="form-control key-field" name="webhookSecret" id="stripeWebhookSecret"
+                             value="<%= stripeConfig?.webhookSecret || '' %>"
+                             placeholder="whsec_...">
+                      <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('stripeWebhookSecret')">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                    </div>
+                    <small class="text-muted">
+                      Webhook URL: <code><%= webhookUrl %>/stripe/webhook</code>
+                    </small>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Currency</label>
+                      <select class="form-select" name="currency">
+                        <option value="USD" <%= stripeConfig?.currency === 'USD' ? 'selected' : '' %>>USD - US Dollar</option>
+                        <option value="EUR" <%= stripeConfig?.currency === 'EUR' ? 'selected' : '' %>>EUR - Euro</option>
+                        <option value="GBP" <%= stripeConfig?.currency === 'GBP' ? 'selected' : '' %>>GBP - British Pound</option>
+                        <option value="CAD" <%= stripeConfig?.currency === 'CAD' ? 'selected' : '' %>>CAD - Canadian Dollar</option>
+                        <option value="AUD" <%= stripeConfig?.currency === 'AUD' ? 'selected' : '' %>>AUD - Australian Dollar</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Statement Descriptor</label>
+                      <input type="text" class="form-control" name="statementDescriptor"
+                             value="<%= stripeConfig?.statementDescriptor || '' %>"
+                             placeholder="SOUP COOKOFF" maxlength="22">
+                      <small class="text-muted">Max 22 characters</small>
+                    </div>
+                  </div>
+
+                  <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" name="testMode" id="stripeTestMode"
+                           <%= stripeConfig?.testMode !== false ? 'checked' : '' %>>
+                    <label class="form-check-label" for="stripeTestMode">Test Mode</label>
+                    <small class="text-muted d-block">Use test API keys for development</small>
+                  </div>
+
+                  <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                      <i class="bi bi-check-lg me-1"></i>Save Stripe Settings
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="testStripeConnection()">
+                      <i class="bi bi-plug me-1"></i>Test Connection
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- PayPal (Coming Soon) -->
+          <div class="col-lg-6 mb-4">
+            <div class="card gateway-card paypal opacity-75">
+              <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                  <svg class="gateway-logo me-3" viewBox="0 0 101 32" xmlns="http://www.w3.org/2000/svg">
+                    <path fill="#003087" d="M12.237 2.8h-7.8c-.5 0-1 .4-1.1.9L.137 22.9c-.1.4.3.8.7.8h3.7c.5 0 1-.4 1.1-.9l.8-5.5c.1-.5.5-.9 1.1-.9h2.5c5.1 0 8.1-2.5 8.9-7.4.3-2.1 0-3.8-1-5-1.1-1.3-3.1-2-5.6-2zm.9 7.3c-.4 2.8-2.6 2.8-4.6 2.8h-1.2l.8-5.2c0-.3.3-.5.6-.5h.5c1.4 0 2.7 0 3.4.8.4.5.5 1.2.4 2.1zm22.2-.2h-3.7c-.3 0-.6.2-.6.5l-.2 1-.3-.4c-.8-1.2-2.6-1.6-4.4-1.6-4.1 0-7.6 3.1-8.3 7.5-.4 2.2.2 4.2 1.4 5.7 1.2 1.3 2.9 1.9 4.9 1.9 3.5 0 5.4-2.2 5.4-2.2l-.2 1c-.1.4.3.8.7.8h3.4c.5 0 1-.4 1.1-.9l2-12.8c.1-.2-.3-.6-.7-.5zm-5.4 7.2c-.4 2.1-2 3.6-4.2 3.6-1.1 0-2-.3-2.5-1-.5-.6-.7-1.5-.5-2.5.3-2.1 2.1-3.6 4.1-3.6 1.1 0 1.9.4 2.5 1 .5.7.7 1.6.6 2.5zm27.1-7.2h-3.7c-.3 0-.7.2-.8.5l-4.9 7.2-2.1-6.9c-.1-.4-.5-.7-1-.7h-3.7c-.5 0-.8.5-.7.9l3.9 11.4-3.6 5.1c-.3.5.1 1.1.6 1.1h3.7c.3 0 .7-.2.8-.5l11.8-17c.3-.4-.1-1.1-.6-1.1z"/>
+                    <path fill="#009cde" d="M73.437 2.8h-7.8c-.5 0-1 .4-1.1.9l-3.2 19.2c-.1.4.3.8.7.8h4c.4 0 .7-.3.8-.7l.9-5.7c.1-.5.5-.9 1.1-.9h2.5c5.1 0 8.1-2.5 8.9-7.4.3-2.1 0-3.8-1-5-1.2-1.3-3.2-2-5.8-2zm.9 7.3c-.4 2.8-2.6 2.8-4.6 2.8h-1.2l.8-5.2c0-.3.3-.5.6-.5h.5c1.4 0 2.7 0 3.4.8.4.5.6 1.2.5 2.1zm22.2-.2h-3.7c-.3 0-.6.2-.6.5l-.2 1-.3-.4c-.8-1.2-2.6-1.6-4.4-1.6-4.1 0-7.6 3.1-8.3 7.5-.4 2.2.2 4.2 1.4 5.7 1.2 1.3 2.9 1.9 4.9 1.9 3.5 0 5.4-2.2 5.4-2.2l-.2 1c-.1.4.3.8.7.8h3.4c.5 0 1-.4 1.1-.9l2-12.8c.1-.2-.3-.6-.7-.5zm-5.4 7.2c-.4 2.1-2 3.6-4.2 3.6-1.1 0-2-.3-2.5-1-.5-.6-.7-1.5-.5-2.5.3-2.1 2.1-3.6 4.1-3.6 1.1 0 1.9.4 2.5 1 .6.7.7 1.6.6 2.5zm10.537-14.1l-3.3 19.7c-.1.4.3.8.7.8h3.2c.5 0 1-.4 1.1-.9l3.2-19.2c.1-.4-.3-.8-.7-.8h-3.5c-.3 0-.5.2-.6.4z"/>
+                  </svg>
+                  <div>
+                    <h5 class="mb-0">PayPal</h5>
+                    <small class="text-muted">PayPal, Venmo, Pay Later</small>
+                  </div>
+                </div>
+                <span class="badge bg-secondary">Coming Soon</span>
+              </div>
+              <div class="card-body text-center py-5">
+                <i class="bi bi-hourglass-split text-muted" style="font-size: 3rem;"></i>
+                <p class="text-muted mt-3 mb-0">PayPal integration coming soon</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Square (Coming Soon) -->
+          <div class="col-lg-6 mb-4">
+            <div class="card gateway-card square opacity-75">
+              <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                  <svg class="gateway-logo me-3" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="64" height="64" rx="10" fill="#000"/>
+                    <rect x="16" y="16" width="32" height="32" rx="4" fill="#fff"/>
+                  </svg>
+                  <div>
+                    <h5 class="mb-0">Square</h5>
+                    <small class="text-muted">In-person & online payments</small>
+                  </div>
+                </div>
+                <span class="badge bg-secondary">Coming Soon</span>
+              </div>
+              <div class="card-body text-center py-5">
+                <i class="bi bi-hourglass-split text-muted" style="font-size: 3rem;"></i>
+                <p class="text-muted mt-3 mb-0">Square integration coming soon</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Statistics -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Payment Statistics (Last 30 Days)</h5>
+          </div>
+          <div class="card-body">
+            <div class="row text-center">
+              <div class="col-md-3">
+                <h3 class="text-primary"><%= stats.totalTransactions %></h3>
+                <small class="text-muted">Total Transactions</small>
+              </div>
+              <div class="col-md-3">
+                <h3 class="text-success">$<%= stats.totalRevenue.toFixed(2) %></h3>
+                <small class="text-muted">Total Revenue</small>
+              </div>
+              <div class="col-md-3">
+                <h3 class="text-info"><%= stats.successRate %>%</h3>
+                <small class="text-muted">Success Rate</small>
+              </div>
+              <div class="col-md-3">
+                <h3 class="text-warning">$<%= stats.avgTransaction.toFixed(2) %></h3>
+                <small class="text-muted">Avg Transaction</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function togglePassword(fieldId) {
+      const field = document.getElementById(fieldId);
+      field.type = field.type === 'password' ? 'text' : 'password';
+    }
+
+    function toggleGateway(provider, enabled) {
+      fetch(`/admin/payments/${provider}/toggle?token=<%= token %>`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled })
+      }).then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          }
+        });
+    }
+
+    function testStripeConnection() {
+      const btn = event.target;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Testing...';
+
+      fetch(`/admin/payments/stripe/test?token=<%= token %>`, {
+        method: 'POST'
+      }).then(res => res.json())
+        .then(data => {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="bi bi-plug me-1"></i>Test Connection';
+          if (data.success) {
+            alert('Connection successful! Stripe is configured correctly.');
+          } else {
+            alert('Connection failed: ' + (data.error || 'Unknown error'));
+          }
+        })
+        .catch(err => {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="bi bi-plug me-1"></i>Test Connection';
+          alert('Connection test failed: ' + err.message);
+        });
+    }
+  </script>
+</body>
+</html>

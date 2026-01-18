@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Tools - Soup Cookoff Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    .sidebar { min-height: 100vh; background: #2c3e50; }
+    .sidebar .nav-link { color: rgba(255,255,255,0.8); padding: 0.75rem 1rem; }
+    .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #fff; background: rgba(255,255,255,0.1); }
+    .sidebar .nav-link i { margin-right: 0.5rem; }
+    .main-content { background: #f8f9fa; min-height: 100vh; }
+    .nav-divider { border-top: 1px solid rgba(255,255,255,0.2); margin: 0.5rem 0; }
+    .nav-section { color: rgba(255,255,255,0.5); font-size: 0.75rem; padding: 0.5rem 1rem; text-transform: uppercase; }
+    .tool-card { transition: all 0.2s; }
+    .tool-card:hover { box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15); }
+    .tool-card.disabled { opacity: 0.6; }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <nav class="col-md-2 d-none d-md-block sidebar p-0">
+        <div class="p-3 text-white">
+          <h5><i class="bi bi-mic"></i> Soup Cookoff</h5>
+          <small>Voice Assistant Admin</small>
+        </div>
+        <ul class="nav flex-column">
+          <li class="nav-item"><a class="nav-link" href="/admin?token=<%= token %>"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/calls?token=<%= token %>"><i class="bi bi-telephone"></i> Call Logs</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/tickets?token=<%= token %>"><i class="bi bi-ticket"></i> Ticket Sales</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/events?token=<%= token %>"><i class="bi bi-calendar-event"></i> Events</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/sponsors?token=<%= token %>"><i class="bi bi-building"></i> Sponsors</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/sponsorship?token=<%= token %>"><i class="bi bi-gift"></i> Sponsorship</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/winners?token=<%= token %>"><i class="bi bi-trophy"></i> Winners</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/kb?token=<%= token %>"><i class="bi bi-book"></i> Knowledge Base</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/analytics?token=<%= token %>"><i class="bi bi-graph-up"></i> Analytics</a></li>
+          <div class="nav-divider"></div>
+          <div class="nav-section">Configuration</div>
+          <li class="nav-item"><a class="nav-link" href="/admin/webhooks?token=<%= token %>"><i class="bi bi-broadcast"></i> Webhooks</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/sms?token=<%= token %>"><i class="bi bi-chat-dots"></i> SMS Settings</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/transfer?token=<%= token %>"><i class="bi bi-telephone-forward"></i> Call Transfer</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/dtmf?token=<%= token %>"><i class="bi bi-grid-3x3"></i> DTMF Menu</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/admin/tools?token=<%= token %>"><i class="bi bi-tools"></i> AI Tools</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/agents?token=<%= token %>"><i class="bi bi-people"></i> AI Agents</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/logic?token=<%= token %>"><i class="bi bi-diagram-3"></i> Logic Rules</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/functions?token=<%= token %>"><i class="bi bi-lightning"></i> Functions</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/payments?token=<%= token %>"><i class="bi bi-credit-card"></i> Payments</a></li>
+          <div class="nav-divider"></div>
+          <li class="nav-item"><a class="nav-link" href="/admin/voices?token=<%= token %>"><i class="bi bi-volume-up"></i> Voices</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/greeting?token=<%= token %>"><i class="bi bi-chat-quote"></i> Greeting</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/settings?token=<%= token %>"><i class="bi bi-gear"></i> Settings</a></li>
+          <div class="nav-divider"></div>
+          <li class="nav-item"><a class="nav-link" href="/admin/help?token=<%= token %>"><i class="bi bi-question-circle"></i> Help & Support</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/account?token=<%= token %>"><i class="bi bi-person-circle"></i> Account</a></li>
+        </ul>
+      </nav>
+
+      <main class="col-md-10 ms-sm-auto main-content p-4">
+        <h2 class="mb-4"><i class="bi bi-tools text-primary me-2"></i>AI Tools (Functions)</h2>
+
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i>
+          Configure which tools/functions the AI assistant can use during calls. Disabling a tool prevents the AI from using that capability.
+        </div>
+
+        <!-- Tool Categories -->
+        <%
+        const defaultTools = [
+          { name: 'getEventInfo', displayName: 'Get Event Info', description: 'Retrieve information about upcoming events', category: 'info', enabled: true },
+          { name: 'getTicketPricing', displayName: 'Get Ticket Pricing', description: 'Get ticket prices for events', category: 'info', enabled: true },
+          { name: 'purchaseTickets', displayName: 'Purchase Tickets', description: 'Process ticket purchases with payment', category: 'payment', enabled: true },
+          { name: 'getSponsorshipInfo', displayName: 'Get Sponsorship Info', description: 'Retrieve sponsorship package information', category: 'info', enabled: true },
+          { name: 'captureSponsorInquiry', displayName: 'Capture Sponsor Inquiry', description: 'Record sponsor interest for follow-up', category: 'general', enabled: true },
+          { name: 'getPastWinners', displayName: 'Get Past Winners', description: 'Retrieve past competition winners', category: 'info', enabled: true },
+          { name: 'getChefInfo', displayName: 'Get Chef Info', description: 'Information about chef registration', category: 'info', enabled: true },
+          { name: 'getAboutInfo', displayName: 'Get About Info', description: 'Organization and mission information', category: 'info', enabled: true },
+          { name: 'transferToHuman', displayName: 'Transfer to Human', description: 'Transfer caller to a human agent', category: 'general', enabled: true },
+          { name: 'bookAppointment', displayName: 'Book Appointment', description: 'Schedule appointments and callbacks', category: 'booking', enabled: true },
+          { name: 'takeMessage', displayName: 'Take Message', description: 'Record voicemail messages', category: 'general', enabled: true },
+          { name: 'answerQuestion', displayName: 'Answer Question', description: 'Answer questions using knowledge base', category: 'info', enabled: true },
+          { name: 'sendTextMessage', displayName: 'Send Text Message', description: 'Send SMS to callers', category: 'general', enabled: true }
+        ];
+        const allTools = tools.length > 0 ? tools : defaultTools;
+        const categories = { info: 'Information', payment: 'Payment', booking: 'Booking', general: 'General' };
+        %>
+
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="btn-group" role="group">
+              <button type="button" class="btn btn-outline-primary active" onclick="filterTools('all')">All</button>
+              <button type="button" class="btn btn-outline-primary" onclick="filterTools('info')">Info</button>
+              <button type="button" class="btn btn-outline-primary" onclick="filterTools('payment')">Payment</button>
+              <button type="button" class="btn btn-outline-primary" onclick="filterTools('booking')">Booking</button>
+              <button type="button" class="btn btn-outline-primary" onclick="filterTools('general')">General</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="row" id="toolsGrid">
+          <% allTools.forEach(tool => { %>
+          <div class="col-md-4 mb-3 tool-item" data-category="<%= tool.category %>">
+            <div class="card tool-card <%= !tool.enabled ? 'disabled' : '' %>" data-name="<%= tool.name %>">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h5 class="card-title mb-1"><%= tool.displayName %></h5>
+                    <code class="small text-muted"><%= tool.name %></code>
+                  </div>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="tool-<%= tool.name %>"
+                           <%= tool.enabled ? 'checked' : '' %>
+                           onchange="toggleTool('<%= tool.name %>')">
+                  </div>
+                </div>
+                <p class="card-text text-muted small mt-2"><%= tool.description %></p>
+                <span class="badge bg-<%= tool.category === 'payment' ? 'success' : tool.category === 'booking' ? 'warning' : 'secondary' %>">
+                  <%= categories[tool.category] || tool.category %>
+                </span>
+              </div>
+            </div>
+          </div>
+          <% }) %>
+        </div>
+
+        <!-- Seed Default Tools -->
+        <% if (tools.length === 0) { %>
+        <div class="card mt-4">
+          <div class="card-body text-center">
+            <p class="mb-3">No tools have been configured in the database yet. Would you like to seed the default tools?</p>
+            <button class="btn btn-primary" onclick="seedTools()">
+              <i class="bi bi-database-add me-2"></i>Seed Default Tools
+            </button>
+          </div>
+        </div>
+        <% } %>
+
+        <!-- Tool Usage Info -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>How Tools Work</h5>
+          </div>
+          <div class="card-body">
+            <p>Tools are functions the AI can call during conversations. When a caller asks a question or makes a request, the AI decides which tool(s) to use.</p>
+            <ul>
+              <li><strong>Info tools</strong>: Retrieve data to answer questions</li>
+              <li><strong>Payment tools</strong>: Handle financial transactions (requires caller info)</li>
+              <li><strong>Booking tools</strong>: Schedule appointments and send confirmations</li>
+              <li><strong>General tools</strong>: Utility functions like messaging and transfers</li>
+            </ul>
+            <div class="alert alert-warning">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+              Disabling critical tools (like transferToHuman) may prevent callers from getting help when needed.
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const token = '<%= token %>';
+
+    async function toggleTool(name) {
+      const res = await fetch(`/admin/tools/toggle/${name}?token=${token}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (res.ok) {
+        const card = document.querySelector(`.tool-card[data-name="${name}"]`);
+        card.classList.toggle('disabled');
+      } else {
+        alert('Failed to toggle tool');
+        location.reload();
+      }
+    }
+
+    function filterTools(category) {
+      document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      document.querySelectorAll('.tool-item').forEach(item => {
+        if (category === 'all' || item.dataset.category === category) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+
+    async function seedTools() {
+      const defaultTools = [
+        { name: 'getEventInfo', displayName: 'Get Event Info', description: 'Retrieve information about upcoming events', category: 'info' },
+        { name: 'getTicketPricing', displayName: 'Get Ticket Pricing', description: 'Get ticket prices for events', category: 'info' },
+        { name: 'purchaseTickets', displayName: 'Purchase Tickets', description: 'Process ticket purchases with payment', category: 'payment' },
+        { name: 'getSponsorshipInfo', displayName: 'Get Sponsorship Info', description: 'Retrieve sponsorship package information', category: 'info' },
+        { name: 'captureSponsorInquiry', displayName: 'Capture Sponsor Inquiry', description: 'Record sponsor interest for follow-up', category: 'general' },
+        { name: 'getPastWinners', displayName: 'Get Past Winners', description: 'Retrieve past competition winners', category: 'info' },
+        { name: 'getChefInfo', displayName: 'Get Chef Info', description: 'Information about chef registration', category: 'info' },
+        { name: 'getAboutInfo', displayName: 'Get About Info', description: 'Organization and mission information', category: 'info' },
+        { name: 'transferToHuman', displayName: 'Transfer to Human', description: 'Transfer caller to a human agent', category: 'general' },
+        { name: 'bookAppointment', displayName: 'Book Appointment', description: 'Schedule appointments and callbacks', category: 'booking' },
+        { name: 'takeMessage', displayName: 'Take Message', description: 'Record voicemail messages', category: 'general' },
+        { name: 'answerQuestion', displayName: 'Answer Question', description: 'Answer questions using knowledge base', category: 'info' },
+        { name: 'sendTextMessage', displayName: 'Send Text Message', description: 'Send SMS to callers', category: 'general' }
+      ];
+
+      for (const tool of defaultTools) {
+        await fetch(`/admin/tools?token=${token}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...tool, enabled: 'true' })
+        });
+      }
+
+      alert('Default tools seeded!');
+      location.reload();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sponsorship Packages - Soup Cookoff Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    .sidebar { min-height: 100vh; background: #2c3e50; }
+    .sidebar .nav-link { color: rgba(255,255,255,0.8); padding: 0.75rem 1rem; }
+    .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #fff; background: rgba(255,255,255,0.1); }
+    .sidebar .nav-link i { margin-right: 0.5rem; }
+    .main-content { background: #f8f9fa; min-height: 100vh; }
+    .package-card { transition: transform 0.2s; }
+    .package-card:hover { transform: translateY(-5px); }
+    .editable-row input, .editable-row select, .editable-row textarea {
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 4px 8px;
+      width: 100%;
+    }
+    .editable-row input:focus, .editable-row select:focus, .editable-row textarea:focus {
+      border-color: #0d6efd;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+    }
+    .benefits-cell { width: 200px; }
+    .benefits-cell textarea { min-height: 100px; font-size: 0.8rem; resize: vertical; }
+    .btn-save-row { transition: all 0.2s; }
+    .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+    .toast { min-width: 250px; }
+    .row-saved { animation: savedFlash 0.5s ease; }
+    @keyframes savedFlash {
+      0% { background-color: #d4edda; }
+      100% { background-color: transparent; }
+    }
+    .color-picker-wrapper { position: relative; display: inline-block; }
+    .color-swatch {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 2px solid #dee2e6;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .color-swatch:hover {
+      transform: scale(1.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .color-dropdown {
+      position: absolute;
+      top: 50px;
+      left: 0;
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000;
+      display: none;
+    }
+    .color-dropdown.show { display: block; }
+    .color-option {
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      margin: 3px;
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+    .color-option:hover {
+      transform: scale(1.15);
+    }
+    .color-option.selected {
+      border-color: #000;
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <nav class="col-md-2 d-none d-md-block sidebar p-0">
+        <div class="p-3 text-white">
+          <h5><i class="bi bi-mic"></i> Soup Cookoff</h5>
+          <small>Voice Assistant Admin</small>
+        </div>
+        <ul class="nav flex-column">
+          <li class="nav-item"><a class="nav-link" href="/admin?token=<%= token %>"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/calls?token=<%= token %>"><i class="bi bi-telephone"></i> Call Logs</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/tickets?token=<%= token %>"><i class="bi bi-ticket"></i> Ticket Sales</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/events?token=<%= token %>"><i class="bi bi-calendar-event"></i> Events</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/sponsors?token=<%= token %>"><i class="bi bi-building"></i> Sponsors</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/admin/sponsorship?token=<%= token %>"><i class="bi bi-gift"></i> Sponsorship</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/winners?token=<%= token %>"><i class="bi bi-trophy"></i> Winners</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/kb?token=<%= token %>"><i class="bi bi-book"></i> Knowledge Base</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/analytics?token=<%= token %>"><i class="bi bi-graph-up"></i> Analytics</a></li>
+          <div class="nav-divider"></div>
+          <div class="nav-section">Configuration</div>
+          <li class="nav-item"><a class="nav-link" href="/admin/webhooks?token=<%= token %>"><i class="bi bi-broadcast"></i> Webhooks</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/sms?token=<%= token %>"><i class="bi bi-chat-dots"></i> SMS Settings</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/transfer?token=<%= token %>"><i class="bi bi-telephone-forward"></i> Call Transfer</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/dtmf?token=<%= token %>"><i class="bi bi-grid-3x3"></i> DTMF Menu</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/tools?token=<%= token %>"><i class="bi bi-tools"></i> AI Tools</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/agents?token=<%= token %>"><i class="bi bi-people"></i> AI Agents</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/logic?token=<%= token %>"><i class="bi bi-diagram-3"></i> Logic Rules</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/functions?token=<%= token %>"><i class="bi bi-lightning"></i> Functions</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/payments?token=<%= token %>"><i class="bi bi-credit-card"></i> Payments</a></li>
+          <div class="nav-divider"></div>
+          <li class="nav-item"><a class="nav-link" href="/admin/voices?token=<%= token %>"><i class="bi bi-volume-up"></i> Voices</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/greeting?token=<%= token %>"><i class="bi bi-chat-quote"></i> Greeting</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/settings?token=<%= token %>"><i class="bi bi-gear"></i> Settings</a></li>
+          <div class="nav-divider"></div>
+          <li class="nav-item"><a class="nav-link" href="/admin/help?token=<%= token %>"><i class="bi bi-question-circle"></i> Help & Support</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/account?token=<%= token %>"><i class="bi bi-person-circle"></i> Account</a></li>
+        </ul>
+      </nav>
+
+      <main class="col-md-10 ms-sm-auto main-content p-4">
+        <h2 class="mb-4"><i class="bi bi-star text-warning me-2"></i>Sponsorship Packages</h2>
+
+        <div class="alert alert-info mb-4">
+          <i class="bi bi-info-circle me-2"></i>
+          <strong>Become a Sponsor!</strong> Support The Soup Cookoff and the AKT Foundation while gaining visibility for your business.
+        </div>
+
+        <!-- Package Cards -->
+        <div class="row mb-4">
+          <% packages.forEach(pkg => { %>
+            <% const benefits = JSON.parse(pkg.benefits); %>
+            <div class="col-lg-3 col-md-6 mb-4">
+              <div class="card package-card h-100 border-<%= pkg.colorClass %> border-<%= pkg.colorClass === 'primary' ? '3' : '2' %>">
+                <div class="card-header bg-<%= pkg.colorClass %> <%= pkg.colorClass === 'warning' ? 'text-dark' : 'text-white' %> text-center py-3">
+                  <h4 class="mb-0"><%= pkg.name %></h4>
+                  <small><%= pkg.subtitle %></small>
+                </div>
+                <div class="card-body">
+                  <div class="text-center mb-4">
+                    <h1 class="text-<%= pkg.colorClass %> mb-0">$<%= Number(pkg.price).toLocaleString() %></h1>
+                    <small class="text-muted">per event</small>
+                  </div>
+                  <ul class="list-unstyled">
+                    <% benefits.forEach(benefit => { %>
+                      <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><%= benefit %></li>
+                    <% }); %>
+                  </ul>
+                </div>
+                <div class="card-footer bg-transparent text-center">
+                  <span class="badge bg-<%= pkg.colorClass %> <%= pkg.colorClass === 'warning' ? 'text-dark' : '' %>"><%= pkg.available %> Available</span>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+
+        <!-- Packages Grid -->
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-table me-2"></i>Manage Packages</h5>
+            <small class="text-muted">Edit inline and click Save to update cards above</small>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover" id="packagesTable">
+                <thead class="table-light">
+                  <tr>
+                    <th style="width: 150px;">Name</th>
+                    <th style="width: 150px;">Subtitle</th>
+                    <th style="width: 100px;">Price ($)</th>
+                    <th style="width: 80px;">Avail</th>
+                    <th style="width: 60px;">Color</th>
+                    <th class="benefits-cell">Benefits (one per line)</th>
+                    <th style="width: 80px;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% packages.forEach((pkg, index) => { %>
+                    <% const benefits = JSON.parse(pkg.benefits); %>
+                    <tr class="editable-row" data-id="<%= pkg.id %>" id="row-<%= pkg.id %>">
+                      <td>
+                        <input type="text" name="name" value="<%= pkg.name %>" class="form-control-sm" onchange="markDirty('<%= pkg.id %>')">
+                      </td>
+                      <td>
+                        <input type="text" name="subtitle" value="<%= pkg.subtitle || '' %>" class="form-control-sm" onchange="markDirty('<%= pkg.id %>')">
+                      </td>
+                      <td>
+                        <input type="number" name="price" value="<%= pkg.price %>" step="0.01" min="0" class="form-control-sm" onchange="markDirty('<%= pkg.id %>')">
+                      </td>
+                      <td>
+                        <input type="number" name="available" value="<%= pkg.available %>" min="0" class="form-control-sm" onchange="markDirty('<%= pkg.id %>')">
+                      </td>
+                      <td>
+                        <div class="color-picker-wrapper">
+                          <input type="hidden" name="colorClass" value="<%= pkg.colorClass %>">
+                          <div class="color-swatch bg-<%= pkg.colorClass %>" onclick="toggleColorPicker('<%= pkg.id %>')" title="Click to change color"></div>
+                          <div class="color-dropdown" id="color-dropdown-<%= pkg.id %>">
+                            <div class="color-option bg-primary" data-color="primary" onclick="selectColor('<%= pkg.id %>', 'primary')"></div>
+                            <div class="color-option bg-warning" data-color="warning" onclick="selectColor('<%= pkg.id %>', 'warning')"></div>
+                            <div class="color-option bg-secondary" data-color="secondary" onclick="selectColor('<%= pkg.id %>', 'secondary')"></div>
+                            <div class="color-option bg-success" data-color="success" onclick="selectColor('<%= pkg.id %>', 'success')"></div>
+                            <div class="color-option bg-danger" data-color="danger" onclick="selectColor('<%= pkg.id %>', 'danger')"></div>
+                            <div class="color-option bg-info" data-color="info" onclick="selectColor('<%= pkg.id %>', 'info')"></div>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="benefits-cell">
+                        <textarea name="benefits" rows="<%= Math.max(benefits.length, 4) %>" class="form-control-sm" onchange="markDirty('<%= pkg.id %>')" oninput="autoResizeTextarea(this)"><%= benefits.join('\n') %></textarea>
+                      </td>
+                      <td>
+                        <button type="button" class="btn btn-sm btn-success btn-save-row" id="save-<%= pkg.id %>" onclick="saveRow('<%= pkg.id %>')">
+                          <i class="bi bi-check-lg"></i> Save
+                        </button>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container">
+    <div id="saveToast" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body d-flex align-items-center">
+          <i class="bi me-2" id="toastIcon"></i>
+          <span id="toastMessage"></span>
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const token = '<%= token %>';
+    const dirtyRows = new Set();
+    let toastInstance;
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('saveToast');
+      const toastIcon = document.getElementById('toastIcon');
+      const toastMessage = document.getElementById('toastMessage');
+
+      // Set colors and icon based on type
+      toast.classList.remove('bg-success', 'bg-danger', 'text-white');
+      if (type === 'success') {
+        toast.classList.add('bg-success', 'text-white');
+        toastIcon.className = 'bi bi-check-circle-fill me-2';
+      } else {
+        toast.classList.add('bg-danger', 'text-white');
+        toastIcon.className = 'bi bi-x-circle-fill me-2';
+      }
+
+      toastMessage.textContent = message;
+
+      if (!toastInstance) {
+        toastInstance = new bootstrap.Toast(toast, { delay: 3000 });
+      }
+      toastInstance.show();
+    }
+
+    function markDirty(id) {
+      dirtyRows.add(id);
+      document.getElementById('save-' + id).disabled = false;
+    }
+
+    function toggleColorPicker(id) {
+      // Close all other dropdowns first
+      document.querySelectorAll('.color-dropdown').forEach(d => {
+        if (d.id !== 'color-dropdown-' + id) d.classList.remove('show');
+      });
+      document.getElementById('color-dropdown-' + id).classList.toggle('show');
+    }
+
+    function selectColor(id, color) {
+      const row = document.getElementById('row-' + id);
+      const swatch = row.querySelector('.color-swatch');
+      const input = row.querySelector('input[name="colorClass"]');
+
+      // Remove old color class and add new one
+      swatch.className = 'color-swatch bg-' + color;
+      input.value = color;
+
+      // Close dropdown
+      document.getElementById('color-dropdown-' + id).classList.remove('show');
+
+      // Mark as dirty
+      markDirty(id);
+    }
+
+    // Close color picker when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.color-picker-wrapper')) {
+        document.querySelectorAll('.color-dropdown').forEach(d => d.classList.remove('show'));
+      }
+    });
+
+    // Auto-resize textarea based on content
+    function autoResizeTextarea(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    // Initialize all textareas on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.benefits-cell textarea').forEach(autoResizeTextarea);
+    });
+
+    async function saveRow(id) {
+      const row = document.getElementById('row-' + id);
+      const saveBtn = document.getElementById('save-' + id);
+
+      // Get values from row inputs
+      const name = row.querySelector('input[name="name"]').value;
+      const subtitle = row.querySelector('input[name="subtitle"]').value;
+      const price = row.querySelector('input[name="price"]').value;
+      const available = row.querySelector('input[name="available"]').value;
+      const colorClass = row.querySelector('input[name="colorClass"]').value;
+      const benefitsText = row.querySelector('textarea[name="benefits"]').value;
+
+      // Convert benefits to JSON array
+      const benefitsArray = benefitsText.split('\n').map(b => b.trim()).filter(b => b);
+
+      // Show loading state
+      saveBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving...';
+
+      try {
+        const formData = new URLSearchParams();
+        formData.append('name', name);
+        formData.append('subtitle', subtitle);
+        formData.append('price', price);
+        formData.append('available', available);
+        formData.append('colorClass', colorClass);
+        formData.append('benefits', JSON.stringify(benefitsArray));
+
+        const response = await fetch('/admin/sponsorship/' + id + '?token=' + token, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: formData.toString(),
+          redirect: 'manual'
+        });
+
+        // Update the corresponding card
+        updateCard(id, { name, subtitle, price, available, colorClass, benefits: benefitsArray });
+
+        // Flash the row to indicate success
+        row.classList.add('row-saved');
+        setTimeout(() => row.classList.remove('row-saved'), 500);
+
+        // Reset save button
+        saveBtn.innerHTML = '<i class="bi bi-check-lg"></i> Save';
+        dirtyRows.delete(id);
+
+        // Show success toast
+        showToast(name + ' saved successfully!', 'success');
+
+      } catch (error) {
+        console.error('Error saving:', error);
+        saveBtn.innerHTML = '<i class="bi bi-check-lg"></i> Save';
+
+        // Show error toast
+        showToast('Failed to save ' + name + '. Please try again.', 'error');
+      }
+    }
+
+    function updateCard(id, data) {
+      // Find the card by looking at all cards and matching by data
+      const cards = document.querySelectorAll('.package-card');
+      let cardIndex = -1;
+
+      // Get all rows to find the index
+      const rows = document.querySelectorAll('.editable-row');
+      rows.forEach((row, index) => {
+        if (row.dataset.id === id) {
+          cardIndex = index;
+        }
+      });
+
+      if (cardIndex >= 0 && cards[cardIndex]) {
+        const card = cards[cardIndex];
+        const colorClass = data.colorClass;
+        const isWarning = colorClass === 'warning';
+
+        // Update card header
+        const header = card.querySelector('.card-header');
+        header.className = `card-header bg-${colorClass} ${isWarning ? 'text-dark' : 'text-white'} text-center py-3`;
+        header.querySelector('h4').textContent = data.name;
+        header.querySelector('small').textContent = data.subtitle || '';
+
+        // Update card border
+        card.className = `card package-card h-100 border-${colorClass} border-${colorClass === 'primary' ? '3' : '2'}`;
+
+        // Update price
+        const priceEl = card.querySelector('.card-body h1');
+        priceEl.className = `text-${colorClass} mb-0`;
+        priceEl.textContent = '$' + Number(data.price).toLocaleString();
+
+        // Update benefits
+        const benefitsList = card.querySelector('.card-body ul');
+        benefitsList.innerHTML = data.benefits.map(benefit =>
+          `<li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>${benefit}</li>`
+        ).join('');
+
+        // Update availability badge
+        const badge = card.querySelector('.card-footer .badge');
+        badge.className = `badge bg-${colorClass} ${isWarning ? 'text-dark' : ''}`;
+        badge.textContent = data.available + ' Available';
+      }
+    }
+
+    // Handle keyboard shortcut (Ctrl+S or Cmd+S) to save focused row
+    document.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        const activeElement = document.activeElement;
+        const row = activeElement.closest('.editable-row');
+        if (row && dirtyRows.has(row.dataset.id)) {
+          saveRow(row.dataset.id);
+        }
+      }
+    });
+  </script>
+</body>
+</html>

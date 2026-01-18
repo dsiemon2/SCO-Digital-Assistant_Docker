@@ -1,0 +1,213 @@
+<%
+  // Default basePath if not provided
+  const bp = typeof basePath !== 'undefined' ? basePath : '/SCOAssistant';
+  // Default branding if not provided
+  const brandColor = (typeof branding !== 'undefined' && branding?.primaryColor) ? branding.primaryColor : '#ea580c';
+%>
+<style>
+  :root {
+    --sidebar-bg: <%= brandColor %>;
+  }
+  .sidebar {
+    min-height: 100vh;
+    background: var(--sidebar-bg);
+  }
+  .sidebar .nav-link {
+    color: rgba(255,255,255,0.85);
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    margin: 2px 8px;
+  }
+  .sidebar .nav-link:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.15);
+  }
+  .sidebar .nav-link.active {
+    color: #fff;
+    background: rgba(255,255,255,0.2);
+    font-weight: 500;
+  }
+  .sidebar .nav-link i {
+    margin-right: 0.5rem;
+    width: 20px;
+    text-align: center;
+  }
+  .nav-divider {
+    border-top: 1px solid rgba(255,255,255,0.2);
+    margin: 0.5rem 1rem;
+  }
+  .nav-section {
+    color: rgba(255,255,255,0.5);
+    font-size: 0.7rem;
+    padding: 0.5rem 1rem 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .sidebar-brand {
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 1rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .sidebar-brand:hover {
+    color: rgba(255,255,255,0.9);
+  }
+</style>
+
+<nav class="col-md-2 d-none d-md-block sidebar py-3">
+  <a href="<%= bp %>/admin?token=<%= token %>" class="sidebar-brand">
+    <i class="bi bi-cup-hot-fill"></i>
+    SCO Assistant
+  </a>
+
+  <div class="nav-divider"></div>
+
+  <ul class="nav flex-column">
+    <!-- Dashboard -->
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'dashboard' ? 'active' : '' %>" href="<%= bp %>/admin?token=<%= token %>">
+        <i class="bi bi-speedometer2"></i>Dashboard
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'calls' ? 'active' : '' %>" href="<%= bp %>/admin/calls?token=<%= token %>">
+        <i class="bi bi-telephone"></i>Call Logs
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'analytics' ? 'active' : '' %>" href="<%= bp %>/admin/analytics?token=<%= token %>">
+        <i class="bi bi-graph-up"></i>Analytics
+      </a>
+    </li>
+
+    <div class="nav-divider"></div>
+    <div class="nav-section">Event Management</div>
+
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'tickets' ? 'active' : '' %>" href="<%= bp %>/admin/tickets?token=<%= token %>">
+        <i class="bi bi-ticket-perforated"></i>Ticket Sales
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'events' ? 'active' : '' %>" href="<%= bp %>/admin/events?token=<%= token %>">
+        <i class="bi bi-calendar-event"></i>Events
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'sponsors' ? 'active' : '' %>" href="<%= bp %>/admin/sponsors?token=<%= token %>">
+        <i class="bi bi-people"></i>Sponsors
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'sponsorship' ? 'active' : '' %>" href="<%= bp %>/admin/sponsorship?token=<%= token %>">
+        <i class="bi bi-award"></i>Sponsorship
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'winners' ? 'active' : '' %>" href="<%= bp %>/admin/winners?token=<%= token %>">
+        <i class="bi bi-trophy"></i>Winners
+      </a>
+    </li>
+
+    <div class="nav-divider"></div>
+    <div class="nav-section">Configuration</div>
+
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'kb' ? 'active' : '' %>" href="<%= bp %>/admin/kb?token=<%= token %>">
+        <i class="bi bi-book"></i>Knowledge Base
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'voices' ? 'active' : '' %>" href="<%= bp %>/admin/voices?token=<%= token %>">
+        <i class="bi bi-mic"></i>Voices
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'greeting' ? 'active' : '' %>" href="<%= bp %>/admin/greeting?token=<%= token %>">
+        <i class="bi bi-chat-quote"></i>Greeting
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'sms' ? 'active' : '' %>" href="<%= bp %>/admin/sms?token=<%= token %>">
+        <i class="bi bi-chat-dots"></i>SMS Settings
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'transfer' ? 'active' : '' %>" href="<%= bp %>/admin/transfer?token=<%= token %>">
+        <i class="bi bi-arrow-left-right"></i>Call Transfer
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'dtmf' ? 'active' : '' %>" href="<%= bp %>/admin/dtmf?token=<%= token %>">
+        <i class="bi bi-grid-3x3"></i>DTMF Menu
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'webhooks' ? 'active' : '' %>" href="<%= bp %>/admin/webhooks?token=<%= token %>">
+        <i class="bi bi-link-45deg"></i>WebHooks
+      </a>
+    </li>
+
+    <div class="nav-divider"></div>
+    <div class="nav-section">Automation</div>
+
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'logic' ? 'active' : '' %>" href="<%= bp %>/admin/logic?token=<%= token %>">
+        <i class="bi bi-diagram-3"></i>Logic Rules
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'functions' ? 'active' : '' %>" href="<%= bp %>/admin/functions?token=<%= token %>">
+        <i class="bi bi-code-square"></i>Functions
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'tools' ? 'active' : '' %>" href="<%= bp %>/admin/tools?token=<%= token %>">
+        <i class="bi bi-tools"></i>AI Tools
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'agents' ? 'active' : '' %>" href="<%= bp %>/admin/agents?token=<%= token %>">
+        <i class="bi bi-robot"></i>AI Agents
+      </a>
+    </li>
+
+    <div class="nav-divider"></div>
+    <div class="nav-section">Billing</div>
+
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'payments' ? 'active' : '' %>" href="<%= bp %>/admin/payments?token=<%= token %>">
+        <i class="bi bi-credit-card"></i>Payments
+      </a>
+    </li>
+
+    <div class="nav-divider"></div>
+    <div class="nav-section">System</div>
+
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'features' ? 'active' : '' %>" href="<%= bp %>/admin/features?token=<%= token %>">
+        <i class="bi bi-toggles"></i>Features
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'settings' ? 'active' : '' %>" href="<%= bp %>/admin/settings?token=<%= token %>">
+        <i class="bi bi-gear"></i>Settings
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'help' ? 'active' : '' %>" href="<%= bp %>/admin/help?token=<%= token %>">
+        <i class="bi bi-question-circle"></i>Help & Support
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= active === 'account' ? 'active' : '' %>" href="<%= bp %>/admin/account?token=<%= token %>">
+        <i class="bi bi-person-circle"></i>Account
+      </a>
+    </li>
+  </ul>
+</nav>

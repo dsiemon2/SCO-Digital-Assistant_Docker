@@ -1,0 +1,542 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// EVENTS & TICKETS
+// ============================================
+
+model Event {
+  id              String   @id @default(cuid())
+  name            String
+  date            DateTime
+  location        String
+  address         String?
+  gaPriceOnline   Decimal  @default(15.00)
+  gaPriceGate     Decimal  @default(20.00)
+  vipPriceOnline  Decimal  @default(35.00)
+  vipPriceGate    Decimal  @default(40.00)
+  gaCapacity      Int      @default(500)
+  vipCapacity     Int      @default(100)
+  gaSold          Int      @default(0)
+  vipSold         Int      @default(0)
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  tickets         TicketPurchase[]
+}
+
+model TicketPurchase {
+  id               String   @id @default(cuid())
+  eventId          String
+  event            Event    @relation(fields: [eventId], references: [id])
+  ticketType       String   // GA or VIP
+  quantity         Int
+  unitPrice        Decimal
+  totalPrice       Decimal
+  customerName     String
+  customerEmail    String
+  customerPhone    String
+  stripePaymentId  String?
+  paymentStatus    String   @default("pending") // pending, completed, failed, refunded
+  confirmationCode String   @unique
+  callLogId        String?
+  callLog          CallLog? @relation(fields: [callLogId], references: [id])
+  createdAt        DateTime @default(now())
+}
+
+// ============================================
+// SPONSORSHIP
+// ============================================
+
+model SponsorInquiry {
+  id              String   @id @default(cuid())
+  contactName     String
+  companyName     String?
+  phone           String
+  email           String?
+  interestedTier  String?  // platinum, gold, silver, bronze
+  notes           String?
+  callLogId       String?
+  followedUp      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+}
+
+// ============================================
+// CALL LOGS & MESSAGING
+// ============================================
+
+model CallLog {
+  id          String   @id @default(cuid())
+  callSid     String   @unique
+  fromNumber  String
+  toNumber    String
+  callerName  String?  // Optional: name of caller (for test calls or identified callers)
+  duration    Int?     // Call duration in seconds
+  startedAt   DateTime @default(now())
+  endedAt     DateTime?
+  outcome     String?  // completed, voicemail, transferred, ticket_purchase
+  createdAt   DateTime @default(now())
+  transcripts Transcript[]
+  messages    Message[]
+  intents     IntentLog[]
+  tickets     TicketPurchase[]
+  citations   CitationsLog[]
+}
+
+model Transcript {
+  id        String   @id @default(cuid())
+  callLogId String
+  callLog   CallLog  @relation(fields: [callLogId], references: [id])
+  text      String
+  createdAt DateTime @default(now())
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  callLogId String
+  callLog   CallLog  @relation(fields: [callLogId], references: [id])
+  type      String   @default("general") // voicemail, sponsorship_inquiry, general
+  subject   String?
+  body      String
+  notified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model IntentLog {
+  id        String   @id @default(cuid())
+  callLogId String?
+  callLog   CallLog? @relation(fields: [callLogId], references: [id])
+  intent    String
+  meta      String   @default("{}")
+  createdAt DateTime @default(now())
+}
+
+// ============================================
+// CONFIGURATION
+// ============================================
+
+model BusinessConfig {
+  id                  String   @id @default(cuid())
+  organizationName    String   @default("The Soup Cookoff")
+  hoursJson           String   @default("{\"Event Days\": \"11am-3pm\"}")
+  address             String   @default("Visit soupcookoff.com for event locations")
+  kbMinConfidence     Float    @default(0.55)
+  lowConfidenceAction String   @default("ask_clarify") // ask_clarify | transfer | voicemail
+  selectedVoice       String   @default("alloy") // alloy, ash, ballad, coral, echo, sage, shimmer, verse
+  greeting            String   @default("Thank you for calling AKT Foundation. Home of the Soup Cook Off and the Great Bake Off. I can help you with many things. Would you like to know more or you can tell me how I can help you today.")
+  endingEnabled       Boolean  @default(false) // Enable/disable call ending message
+  endingMessage       String   @default("Thank you for calling. Have a great day!") // Message played when call ends
+  updatedAt           DateTime @updatedAt
+}
+
+model SupportedLanguage {
+  id        String   @id @default(cuid())
+  code      String   @unique  // en, es, de, zh, vi, etc.
+  name      String            // English, Spanish, German, etc.
+  nativeName String           // English, Español, Deutsch, etc.
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Department {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  phone     String
+  createdAt DateTime @default(now())
+}
+
+// ============================================
+// KNOWLEDGE BASE
+// ============================================
+
+model KnowledgeDoc {
+  id        String   @id @default(cuid())
+  title     String
+  slug      String   @unique
+  language  String   @default("en")
+  content   String
+  createdAt DateTime @default(now())
+  chunks    KnowledgeChunk[]
+}
+
+model KnowledgeChunk {
+  id        String       @id @default(cuid())
+  docId     String
+  doc       KnowledgeDoc @relation(fields: [docId], references: [id], onDelete: Cascade)
+  index     Int
+  text      String
+  embedding String       // JSON array of numbers
+  createdAt DateTime     @default(now())
+}
+
+model CitationsLog {
+  id        String   @id @default(cuid())
+  callLogId String?
+  callLog   CallLog? @relation(fields: [callLogId], references: [id])
+  callSid   String?
+  question  String
+  language  String
+  sources   String   // JSON array: [{title, score}]
+  createdAt DateTime @default(now())
+}
+
+model LanguageLog {
+  id        String   @id @default(cuid())
+  callSid   String?
+  language  String
+  createdAt DateTime @default(now())
+}
+
+// ============================================
+// SPONSORSHIP PACKAGES
+// ============================================
+
+model SponsorshipPackage {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  subtitle        String?
+  price           Decimal
+  available       Int      @default(1)
+  colorClass      String   @default("primary") // primary, warning, secondary, success
+  benefits        String   // JSON array of benefit strings
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ============================================
+// WINNERS
+// ============================================
+
+model Winner {
+  id          String   @id @default(cuid())
+  eventId     String?
+  eventName   String   // e.g., "Harrisburg 2025"
+  division    String   // Professional or Amateur
+  place       Int      // 1, 2, 3, 4, 5
+  chefName    String
+  soupName    String
+  restaurant  String?  // For professional division
+  createdAt   DateTime @default(now())
+}
+
+// ============================================
+// WEBHOOKS CONFIGURATION
+// ============================================
+
+model Webhook {
+  id          String   @id @default(cuid())
+  name        String   @unique  // call_started, call_ended, call_transferred, ticket_purchased, sponsor_inquiry
+  url         String
+  enabled     Boolean  @default(true)
+  secret      String?  // Optional secret for signature verification
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================
+// SMS CONFIGURATION
+// ============================================
+
+model SmsConfig {
+  id                    String   @id @default(cuid())
+  enabled               Boolean  @default(true)
+  fromNumber            String?  // Override Twilio number
+  ticketConfirmation    Boolean  @default(true)
+  sponsorFollowUp       Boolean  @default(true)
+  eventReminder         Boolean  @default(true)
+  voicemailNotification Boolean  @default(true)
+  adminAlertNumber      String?  // Phone to receive admin alerts
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model SmsTemplate {
+  id        String   @id @default(cuid())
+  name      String   @unique  // ticket_confirmation, sponsor_followup, event_reminder, voicemail_notification
+  template  String   // Template with placeholders like {{customerName}}, {{eventName}}
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================
+// TRANSFER CONFIGURATION
+// ============================================
+
+model TransferConfig {
+  id                  String   @id @default(cuid())
+  enabled             Boolean  @default(true)
+  defaultTransferNumber String?  // Default number to transfer to
+  transferMessage     String   @default("Please hold while I transfer you to a team member.")
+  voicemailEnabled    Boolean  @default(true)
+  voicemailNumber     String?  // Voicemail box number
+  voicemailGreeting   String   @default("Please leave a message after the tone and we'll get back to you as soon as possible.")
+  maxWaitTime         Int      @default(30) // Seconds before going to voicemail
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model TransferRoute {
+  id          String   @id @default(cuid())
+  name        String   @unique  // sales, support, sponsorship, general
+  phoneNumber String
+  description String?
+  schedule    String?  // JSON: business hours when this route is available
+  enabled     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================
+// DTMF MENU CONFIGURATION
+// ============================================
+
+model DtmfMenu {
+  id          String   @id @default(cuid())
+  enabled     Boolean  @default(true)
+  greeting    String   @default("Press 1 for event information, Press 2 to buy tickets, Press 3 for sponsorship, Press 0 to speak with someone.")
+  timeoutSecs Int      @default(5)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model DtmfOption {
+  id          String   @id @default(cuid())
+  digit       String   @unique  // 0-9, *, #
+  label       String   // "Event Info", "Buy Tickets", etc.
+  action      String   // say, transfer, voicemail, ai_intent
+  actionValue String?  // Text to say, phone to transfer to, or intent to trigger
+  enabled     Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================
+// AI TOOLS CONFIGURATION
+// ============================================
+
+model AiTool {
+  id          String   @id @default(cuid())
+  name        String   @unique  // getEventInfo, purchaseTickets, etc.
+  displayName String   // "Get Event Info", "Purchase Tickets"
+  description String
+  enabled     Boolean  @default(true)
+  category    String   @default("general") // general, payment, booking, info
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================
+// AI AGENTS CONFIGURATION
+// ============================================
+
+model AiAgent {
+  id            String   @id @default(cuid())
+  name          String   @unique  // main, sales, support, spanish
+  displayName   String   // "Main Assistant", "Sales Agent"
+  voice         String   @default("alloy")
+  language      String   @default("en")
+  systemPrompt  String   // Custom system prompt for this agent
+  greeting      String?  // Custom greeting
+  tools         String   @default("[]") // JSON array of enabled tool names
+  isDefault     Boolean  @default(false)
+  enabled       Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ============================================
+// LOGIC SPLIT CONFIGURATION
+// ============================================
+
+model LogicRule {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  condition   String   // JSON: {field, operator, value} e.g., {"field": "language", "operator": "equals", "value": "es"}
+  action      String   // transfer_agent, transfer_phone, play_message, set_variable
+  actionValue String   // Agent ID, phone number, message text, or variable JSON
+  priority    Int      @default(0) // Lower = higher priority
+  enabled     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================
+// CALENDAR CONFIGURATION
+// ============================================
+
+model CalendarConfig {
+  id              String   @id @default(cuid())
+  provider        String   @default("google") // google, outlook, cal.com
+  enabled         Boolean  @default(false)
+  apiKey          String?  // API key or OAuth credentials
+  calendarId      String?  // Calendar ID for booking
+  clientId        String?  // OAuth client ID
+  clientSecret    String?  // OAuth client secret
+  refreshToken    String?  // OAuth refresh token
+  webhookUrl      String?  // Webhook for real-time updates
+  defaultDuration Int      @default(30) // Default appointment duration in minutes
+  bufferTime      Int      @default(15) // Buffer between appointments
+  workingHours    String   @default("{\"Mon-Fri\": {\"start\": \"09:00\", \"end\": \"17:00\"}}") // JSON
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ============================================
+// CUSTOM FUNCTIONS CONFIGURATION
+// ============================================
+
+model CustomFunction {
+  id              String   @id @default(cuid())
+  name            String   @unique  // Function name (no spaces)
+  displayName     String   // Human-readable name
+  description     String   // Description for LLM
+  type            String   @default("custom") // calendar_check, calendar_book, custom
+  endpoint        String?  // API endpoint URL
+  method          String   @default("POST") // HTTP method
+  timeout         Int      @default(120000) // Timeout in milliseconds
+  headers         String   @default("{}") // JSON: {"Authorization": "Bearer xxx"}
+  queryParams     String   @default("{}") // JSON: {"key": "value"}
+  parameters      String   @default("{}") // JSON Schema for LLM parameters
+  payloadType     String   @default("args_only") // args_only, full_context, custom
+  customPayload   String?  // Custom payload template
+  responseMapping String?  // JSON: how to map API response
+  enabled         Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ============================================
+// PAYMENT GATEWAY CONFIGURATION
+// ============================================
+
+model PaymentConfig {
+  id                String   @id @default(cuid())
+  provider          String   @unique  // stripe, paypal, square
+  displayName       String   // "Stripe", "PayPal", "Square"
+  enabled           Boolean  @default(false)
+  isDefault         Boolean  @default(false)
+  testMode          Boolean  @default(true)
+
+  // API Keys (encrypted in production)
+  publicKey         String?  // Publishable key for client-side
+  secretKey         String?  // Secret key for server-side
+  webhookSecret     String?  // Webhook signing secret
+
+  // Settings
+  currency          String   @default("USD")
+  statementDescriptor String? // What appears on customer statements
+
+  // Stripe-specific
+  stripeAccountId   String?  // Connected account ID (for marketplace)
+
+  // PayPal-specific
+  paypalClientId    String?
+  paypalClientSecret String?
+  paypalMode        String?  // sandbox, live
+
+  // Square-specific
+  squareLocationId  String?
+  squareAppId       String?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// ============================================
+// BRANDING & SETTINGS
+// ============================================
+
+model Branding {
+  id              String   @id @default(cuid())
+  logoUrl         String   @default("")
+  faviconUrl      String   @default("")
+  primaryColor    String   @default("#ea580c") // Orange
+  secondaryColor  String   @default("#c2410c")
+  accentColor     String   @default("#f97316")
+  headingFont     String   @default("Inter")
+  bodyFont        String   @default("Inter")
+  updatedAt       DateTime @updatedAt
+}
+
+model StoreInfo {
+  id              String   @id @default(cuid())
+  businessName    String   @default("The Soup Cookoff")
+  tagline         String   @default("AKT Foundation Events")
+  description     String   @default("AI-powered event information and ticket sales assistant")
+  address         String   @default("")
+  phone           String   @default("")
+  email           String   @default("")
+  website         String   @default("")
+  businessHours   String   @default("")
+  timezone        String   @default("America/New_York")
+  updatedAt       DateTime @updatedAt
+}
+
+model Features {
+  id                      String   @id @default(cuid())
+  faqEnabled              Boolean  @default(false)
+  stickyBarEnabled        Boolean  @default(false)
+  stickyBarText           String   @default("")
+  stickyBarBgColor        String   @default("#ea580c")
+  stickyBarLink           String   @default("")
+  stickyBarLinkText       String   @default("")
+  liveChatEnabled         Boolean  @default(false)
+  chatProvider            String   @default("builtin")
+  chatWelcomeMessage      String   @default("Hi! How can we help you today?")
+  chatAgentName           String   @default("Support")
+  chatWidgetColor         String   @default("#ea580c")
+  chatPosition            String   @default("bottom-right")
+  chatShowOnMobile        Boolean  @default(true)
+  chatWidgetId            String   @default("")
+  chatEmbedCode           String   @default("")
+  emailNotifications      Boolean  @default(true)
+  smsNotifications        Boolean  @default(false)
+  pushNotifications       Boolean  @default(false)
+  orderConfirmations      Boolean  @default(true)
+  marketingEmails         Boolean  @default(false)
+  appointmentReminders    Boolean  @default(true)
+  facebookEnabled         Boolean  @default(false)
+  facebookUrl             String   @default("")
+  twitterEnabled          Boolean  @default(false)
+  twitterUrl              String   @default("")
+  instagramEnabled        Boolean  @default(false)
+  instagramUrl            String   @default("")
+  linkedinEnabled         Boolean  @default(false)
+  linkedinUrl             String   @default("")
+  youtubeEnabled          Boolean  @default(false)
+  youtubeUrl              String   @default("")
+  tiktokEnabled           Boolean  @default(false)
+  tiktokUrl               String   @default("")
+  shareOnFacebook         Boolean  @default(true)
+  shareOnTwitter          Boolean  @default(true)
+  shareOnLinkedin         Boolean  @default(false)
+  shareOnWhatsapp         Boolean  @default(true)
+  shareOnEmail            Boolean  @default(true)
+  copyLinkButton          Boolean  @default(true)
+  updatedAt               DateTime @updatedAt
+}
+
+model PaymentSettings {
+  id                    String   @id @default(cuid())
+  enabled               Boolean  @default(false)
+  stripeEnabled         Boolean  @default(false)
+  stripePublishableKey  String   @default("")
+  stripeTestMode        Boolean  @default(true)
+  paypalEnabled         Boolean  @default(false)
+  paypalClientId        String   @default("")
+  paypalSandbox         Boolean  @default(true)
+  squareEnabled         Boolean  @default(false)
+  squareAppId           String   @default("")
+  squareSandbox         Boolean  @default(true)
+  updatedAt             DateTime @updatedAt
+}
