@@ -1,5 +1,7 @@
 # The Soup Cookoff Digital Voice Assistant
 
+**Production Domain:** aida.TheSoupCookoff.com
+
 A production-ready **digital voice assistant** for The Soup Cookoff nonprofit organization. Callers can ask about events, purchase tickets with credit card, learn about sponsorship opportunities, hear past winners, and more - all through natural voice conversation.
 
 ## About The Soup Cookoff
